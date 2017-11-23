@@ -7,9 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.test.context.junit4.SpringRunner;
-import reactor.core.publisher.Mono;
 
 import java.util.Date;
 
@@ -21,7 +19,7 @@ public class ExperimentingWithSpringDataMongodbApplicationTests {
 	AccountRepository accountRepository;
 
 	@Test
-	public void contextLoads() {
+	public void contextLoads() throws Exception {
 
 		Account account = new Account();
 		account.setEmail("account@domain.com");
@@ -30,11 +28,13 @@ public class ExperimentingWithSpringDataMongodbApplicationTests {
 		account.setPassword("08d70as9d8");
 		account.setCreatedAt(new Date());
 
-		Account created = accountRepository.save(account).block();
+		accountRepository.save(account).doOnSuccess(created -> {
+			Assert.assertNotNull("Should return created account", created);
+			Assert.assertNotNull("Account.id shouldn't be null", created.getId());
+			System.out.println(created);
 
-		Assert.assertNotNull("Should return created account", created);
-		Assert.assertNotNull("Account.id shouldn't be null", created.getId());
-		System.out.println(created);
+		}).block();
+
 	}
 
 }
